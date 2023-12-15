@@ -5,37 +5,90 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace AdventOfCode2023;
-internal class Day1
+public class Day1
 {
-    public static void Q1()
+    private static IReadOnlyDictionary<string, int> _translations = new Dictionary<string, int>
+    {
+        {"one", 1}, {"two", 2},
+        {"three", 3}, {"four", 4},
+        {"five", 5}, {"six", 6},
+        {"seven", 7 }, {"eight",  8},
+        {"nine", 9 }
+    };
+
+    private static List<string> _keys = _translations.Keys.ToList();
+
+    public static int Q1(string input)
     {
         var start = 0;
         var end = 0;
         var sum = 0;
 
-        var lines = Prompt().Split(Environment.NewLine);
+        var lines = input.Split(Environment.NewLine);
 
         foreach (var line in lines)
         {
-            foreach (var c in line)
+            var sb = new StringBuilder();
+            for (int i = 0; i < line.Length; i++)
             {
-                if (!char.IsNumber(c)) continue;
+                char c = line[i];
+                if (!char.IsNumber(c))
+                {
+                    sb.Append(c);
+                    if (!StartsWith(sb.ToString()))
+                    {
+                        i -= sb.Length - 1;
+                        sb.Clear();
+                        continue;
+                    }
+                    if (_translations.TryGetValue(sb.ToString(), out var val))
+                    {
+                        if (start == 0) start = val;
+                        end = val;
+                        i -= sb.Length - 1;
+                        sb.Clear();
+                    }
+                } 
+                else
+                {
+                    sb.Clear();
+                    var num = c - '0';
+                    if (start == 0) start = num;
+                    end = num;
+                }
 
-                var num = (int)c;
-                if (start == 0) start = num;
-                end = num;
             }
-
+            Console.WriteLine(line + " " + start + " " + end);
             sum += (start * 10) + end;
             start = 0;
             end = 0;
         }
 
         Console.WriteLine();
-        Console.WriteLine(sum);
+        Console.WriteLine("The total sum: " + sum);
+        Console.WriteLine();
+
+        return sum;
     }
 
-    private static string Prompt()
+    private static bool StartsWith(string window)
+    {
+        foreach (var key in _keys)
+        {
+            for (var i = 0; i < window.Length; i++) 
+            {
+                var windowLetter = window[i];
+                var keyLetter = key[i];
+                if (keyLetter != windowLetter) break;
+
+                if (i == window.Length - 1) return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static string Prompt()
     {
         return @"fouronevhnrz44
 eightg1
@@ -1036,7 +1089,6 @@ fourhzgxqtxggfpprrmtfqsdhc2fdxnjdgx64five
 threeninejdzzrbpmfhjcqdsix8two2bb
 7877pzrbtcsddmrffzdsmqlqkjsix
 5four3eight
-15nine1
-";
+15nine1";
     }
 }
